@@ -42,7 +42,7 @@ class PageReferenceLink extends WireData implements Module {
 
 		// $this->addHookAfter("InputfieldPageListSelect::render", $this, "renderSingle");
 		// $this->addHookAfter("InputfieldPageListSelect::render", $this, "findRelated");
-		//
+
 		$this->addHookAfter("InputfieldPageListSelectMultiple::render", $this, "renderMultiple");
 	}
 
@@ -84,7 +84,10 @@ _END;
 		$event->return = $event->return . $script;
 	}
 
-
+	/**
+	 * render edit links to single page list select
+	 *
+	 */
 	public function renderSingle(HookEvent $event) {
 
 		// returns the event object in this case the inputfield
@@ -116,7 +119,6 @@ _END;
 
 	/**
 	 * find related pages that are also linked to the page
-	 *
 	 *
 	 */
 	public function findRelated(HookEvent $event) {
