@@ -66,15 +66,15 @@ class PageReferenceLink extends WireData implements Module {
 		// stop if there's no value
 		if($inputfield->value == null) return;
 
-		$admin_edit_url = $this->config->urls->admin . "page/edit/?id=";
+		$admin_edit_url = $this->config->urls->admin . "page/edit/";
 
 		$script = <<<_END
 		<script>
 			// reference link
 			$(function(){
-				$("#{$inputfield->id}_items").find("li:not(.itemTemplate)").each(function(){
+				$("#{$inputfield->id}_items").find("li").each(function(){
 					var ref_pageid = $(this).find(".itemValue").text();
-					var edit_link = $("<a class='itemEdit' href='$admin_edit_url"+ref_pageid+"&iframe&modal=1'><span class='ui-icon ui-icon-pencil'>edit</span></a>");
+					var edit_link = $("<a class='itemEdit' href='$admin_edit_url?iframe&modal=1'><span class='ui-icon ui-icon-pencil'>edit</span></a>");
 
 					$(this).append(edit_link);
 				});
