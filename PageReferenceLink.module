@@ -72,7 +72,7 @@ class PageReferenceLink extends WireData implements Module {
 		<script>
 			// reference link
 			$(function(){
-				$("#{$inputfield->id}_items").find("li").each(function(){
+				$("#{$inputfield->id}_items").find("li:not(.itemTemplate)").each(function(){
 					var ref_pageid = $(this).find(".itemValue").text();
 					var edit_link = $("<a class='itemEdit' href='$admin_edit_url"+ref_pageid+"&iframe&modal=1'><span class='ui-icon ui-icon-pencil'>edit</span></a>");
 
