@@ -1,0 +1,160 @@
+<?php
+
+/**
+ * ProcessWire PageReferenceLink
+ *
+ * @author Soma philipp(at)urlich.ch
+ *
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2010 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class PageReferenceLink extends WireData implements Module {
+
+	/**
+	 * getModuleInfo is a module required by all modules to tell ProcessWire about them
+	 *
+	 * @return array
+	 *
+	 */
+	public static function getModuleInfo() {
+
+		return array(
+			'title' => 'Page Reference Link',
+			'version' => 1,
+			'summary' => 'Module to prepend link(s) to page(s) selected in page reference fields.',
+			'href' => '',
+			'singular' => true,
+			'autoload' => true
+			);
+	}
+
+
+	public function init() {
+		// $this->addHookAfter("InputfieldPageAutocomplete::render", $this, "renderMultiple");
+		// $this->addHookAfter("InputfieldPageAutocomplete::render", $this, "findRelated");
+
+		// $this->addHookAfter("InputfieldPageListSelect::render", $this, "renderSingle");
+		// $this->addHookAfter("InputfieldPageListSelect::render", $this, "findRelated");
+		//
+		$this->addHookAfter("InputfieldPageListSelectMultiple::render", $this, "renderMultiple");
+	}
+
+	public function renderMultiple($event) {
+
+		$this->config->styles->add($this->config->urls->PageReferenceLink . "PageReferenceLink.css");
+		$this->config->scripts->add($this->config->urls->PageReferenceLink . "PageReferenceLink.js");
+
+		// returns the event object in this case the inputfield
+		$inputfield	= $event->object;
+		$fname		= $inputfield->name;
+
+		// if not on desired field name(s) we don't go any further
+		if(!($fname == "selec_page_image"
+			|| $fname == "selec_page_image_1"
+			|| $fname == "select_architect"
+			// enter more here
+			)) return;
+
+		// stop if there's no value
+		if($inputfield->value == null) return;
+
+		$admin_edit_url = $this->config->urls->admin . "page/edit/?id=";
+
+		$script = <<<_END
+		<script>
+			// reference link
+			$(function(){
+				$("#{$inputfield->id}_items").find("li").each(function(){
+					var ref_pageid = $(this).find(".itemValue").text();
+					var edit_link = $("<a class='itemEdit' href='$admin_edit_url"+ref_pageid+"&iframe&modal=1'><span class='ui-icon ui-icon-pencil'>edit</span></a>");
+
+					$(this).append(edit_link);
+				});
+			});
+		</script>
+_END;
+		$event->return = $event->return . $script;
+	}
+
+
+	public function renderSingle(HookEvent $event) {
+
+		// returns the event object in this case the inputfield
+		$inputfield	= $event->object;
+		$fname		= $inputfield->name;
+
+		// if not on desired field we wont go any further
+		if(!($fname == "select_architect"
+			|| $fname == "some_page_field"
+			// enter more here
+			)) return;
+
+		// if nothing there go return
+		if(count($inputfield->value) == 0) return;
+
+		$out = '';
+
+		// ok still here? lets get the page selected
+		$p = $this->pages->get("id=$inputfield->value->id,include=hidden");
+
+		// and create the link for output
+		$url = $this->config->urls->admin . "page/edit/?id=$p->id";
+		$out .= "<li><a href='$url'><span class='ui-icon ui-icon-pencil'></span>{$p->title}</a> ($p->path)</li>";
+
+		// return the string prepended to the inputfield output
+		$descr = "<div class='ui-widget-content' style='clear:both;margin-bottom:1em;padding:0 1em 1em;'><p class='description'>Edit link to the page selected</p>";
+		$event->return = $event->return . $descr . "<ul class='PageReferenceLink_list' style='clear:float'>".$out."</ul></div>";
+	}
+
+	/**
+	 * find related pages that are also linked to the page
+	 *
+	 *
+	 */
+	public function findRelated(HookEvent $event) {
+
+		// returns the event object in this case the inputfield
+		$inputfield		= $event->object;
+		$fname			= $inputfield->name;
+		$field_filter 	= "select_architect";
+
+		// if not on desired field we wont go any further
+		if(!($fname == $field_filter)) return;
+
+		// if nothing there go return
+		// if(count($inputfield->value) == 0) return;
+
+		$out = '';
+
+		// get current page edited
+		$epId = wire("input")->get->id;
+		$edited_page = wire("pages")->get($epId);
+
+		// search for a page backlinked to this currently being edited
+		$result = wire("pages")->find("$field_filter=$edited_page,include=hidden");
+
+		// if any page(s) found
+		if(count($result)) {
+			// render them in a list
+			foreach($result as $res){
+				// and create the link for output
+				$url = $this->config->urls->admin . "page/edit/?id=$res->id";
+				$out .= "<li><a href='$url'><span class='ui-icon ui-icon-pencil'></span>{$res->title}</a> ($res->path)</li>";
+			}
+
+		} else {
+			// if none found return a message that none was found
+			$out .= "<li><span class='error'>No related page found linking to this page!</span></li>";
+		}
+		// return the string prepended to the inputfield output
+		$descr = "<div class='ui-widget-content' style='clear:both;margin-bottom:1em;padding:0 1em 1em;'><p class='description'>Page that refer to this page</p>";
+		$event->return = $event->return . $descr . "<ul class='PageReferenceLink_list'>".$out."</ul></div>";
+	}
+}
