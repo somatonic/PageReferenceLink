@@ -50,17 +50,18 @@ class PageReferenceLink extends WireData implements Module {
 
 		$this->config->styles->add($this->config->urls->PageReferenceLink . "PageReferenceLink.css");
 		$this->config->scripts->add($this->config->urls->PageReferenceLink . "PageReferenceLink.js");
+		$this->modules->get("JqueryFancybox"); // makes sure fancybox module is loaded
 
 		// returns the event object in this case the inputfield
 		$inputfield	= $event->object;
 		$fname		= $inputfield->name;
 
 		// if not on desired field name(s) we don't go any further
-		if(!($fname == "selec_page_image"
-			|| $fname == "selec_page_image_1"
-			|| $fname == "select_architect"
-			// enter more here
-			)) return;
+		// if(!($fname == "selec_page_image"
+		// 	|| $fname == "selec_page_image_1"
+		// 	|| $fname == "select_architect"
+		// 	// enter more here
+		// 	)) return;
 
 		// stop if there's no value
 		if($inputfield->value == null) return;
