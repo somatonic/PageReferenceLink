@@ -44,6 +44,43 @@ class PageReferenceLink extends WireData implements Module {
 		// $this->addHookAfter("InputfieldPageListSelect::render", $this, "findRelated");
 
 		$this->addHookAfter("InputfieldPageListSelectMultiple::render", $this, "renderMultiple");
+		$this->addHookAfter("InputfieldAsmSelect::render", $this, "renderASMSelect");
+	}
+
+	public function renderASMSelect($event) {
+		$this->config->styles->add($this->config->urls->PageReferenceLink . "PageReferenceLink.css");
+		$this->config->scripts->add($this->config->urls->PageReferenceLink . "PageReferenceLink.js");
+		$this->modules->get("JqueryFancybox"); // makes sure fancybox module is loaded
+
+		// returns the event object in this case the inputfield
+		$inputfield	= $event->object;
+		$fname		= $inputfield->name;
+
+		// if not on desired field name(s) we don't go any further
+		// if(!($fname == "selec_page_image"
+		// 	|| $fname == "selec_page_image_1"
+		// 	|| $fname == "select_architect"
+		// 	// enter more here
+		// 	)) return;
+
+		// stop if there's no value
+		if($inputfield->value == null) return;
+
+		$admin_edit_url = $this->config->urls->admin . "page/edit/";
+
+		$script = <<<_END
+		<script>
+			// page reference edit link asm select multiple
+			$(function(){
+				$(".{$inputfield->id}").find("li").each(function(){
+					var edit_link = $("<a class='asmItemEditModal' href='$admin_edit_url?iframe&modal=1'><span class='ui-icon ui-icon-pencil'>edit</span></a>");
+
+					$(this).append(edit_link);
+				});
+			});
+		</script>
+_END;
+		$event->return = $event->return . $script;
 	}
 
 	public function renderMultiple($event) {
@@ -70,7 +107,7 @@ class PageReferenceLink extends WireData implements Module {
 
 		$script = <<<_END
 		<script>
-			// reference link
+			// page edit reference link page list select multiple
 			$(function(){
 				$("#{$inputfield->id}_items").find("li").each(function(){
 					var ref_pageid = $(this).find(".itemValue").text();

@@ -2,5 +2,11 @@
 .InputfieldPageListSelectMultiple ol li .itemEdit{
     position: absolute;
     right: 30px;
-    top: 2px;
+    top: 3px;
+}
+
+.asmListSortable li .asmItemEditModal{
+    position: absolute;
+    right: 30px;
+    top: 3px;
 }
